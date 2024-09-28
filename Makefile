@@ -21,4 +21,7 @@ migrateup:
 migratedown:
 	migrate -path internal/db/migration -database "$(DB_URL)" -verbose down
 
-.PHONY: network postgres sqlc createdb dropdb migrateup migratedown
+test:
+	go test -v -cover ./...
+
+.PHONY: network postgres sqlc createdb dropdb migrateup migratedown test
