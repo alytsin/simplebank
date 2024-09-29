@@ -16,6 +16,7 @@ jobs:
         env:
           POSTGRES_USER: root
           POSTGRES_PASSWORD: 123
+          POSTGRES_DB: simple_bank
         ports:
           - 5432:5432
 
@@ -28,8 +29,14 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Create DB
-        run: make createdb
+      - name: Install golang-migrate
+        run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.18.0/migrate.linux-amd64.tar.gz | tar xvz
+          sudo mv migrate.linux-amd64 /usr/bin/migrate
+          which migrate
+
+      - name: Run migrations
+        run: make migrateup
 
       - name: Test
         run: make test
