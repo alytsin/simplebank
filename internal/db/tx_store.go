@@ -6,12 +6,17 @@ import (
 	"fmt"
 )
 
+type TxStoreInterface interface {
+	Querier
+	Transfer(ctx context.Context, arg *TransferTxParams) (TransferTxResult, error)
+}
+
 type TxStore struct {
 	*Queries
 	db *sql.DB
 }
 
-func NewTxStore(db *sql.DB) *TxStore {
+func NewTxStore(db *sql.DB) TxStoreInterface {
 	return &TxStore{
 		db:      db,
 		Queries: New(db),

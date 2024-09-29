@@ -23,7 +23,7 @@ type CreateEntryParams struct {
 	Amount    int64 `json:"amount"`
 }
 
-func (q *Queries) CreateEntry(ctx context.Context, arg *CreateEntryParams) (Entry, error) {
+func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry, error) {
 	row := q.db.QueryRowContext(ctx, createEntry, arg.AccountID, arg.Amount)
 	var i Entry
 	err := row.Scan(
@@ -66,7 +66,7 @@ type ListEntriesParams struct {
 	Offset    int32 `json:"offset"`
 }
 
-func (q *Queries) ListEntries(ctx context.Context, arg *ListEntriesParams) ([]Entry, error) {
+func (q *Queries) ListEntries(ctx context.Context, arg ListEntriesParams) ([]Entry, error) {
 	rows, err := q.db.QueryContext(ctx, listEntries, arg.AccountID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
