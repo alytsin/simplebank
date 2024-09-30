@@ -7,7 +7,7 @@ import (
 )
 
 type transferTxPair struct {
-	R TransferTxResult
+	R *TransferTxResult
 	E error
 }
 

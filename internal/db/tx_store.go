@@ -8,7 +8,7 @@ import (
 
 type TxStoreInterface interface {
 	Querier
-	Transfer(ctx context.Context, arg *TransferTxParams) (TransferTxResult, error)
+	Transfer(ctx context.Context, arg *TransferTxParams) (*TransferTxResult, error)
 }
 
 type TxStore struct {
