@@ -24,4 +24,8 @@ migratedown:
 test:
 	go test -v -cover ./...
 
-.PHONY: network postgres sqlc createdb dropdb migrateup migratedown test
+generate:
+	go generate ./...
+
+
+.PHONY: network postgres sqlc createdb dropdb migrateup migratedown test generate
