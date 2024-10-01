@@ -66,7 +66,7 @@ func TestGetAccount(t *testing.T) {
 				Return(tc.foundAccount, tc.err).
 				Once()
 
-			controller := NewApiController(&store)
+			controller := NewApiController(&store, nil)
 
 			rsp := httptest.NewRecorder()
 			router := gin.New()
@@ -133,12 +133,18 @@ func TestCreateAccount(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 
+			var param interface{}
+
 			store := dbmock.TxStore{}
-			store.On("CreateAccount", mock.Anything, tc.params).
+			if tc.params != nil {
+				param = *tc.params
+			}
+
+			store.On("CreateAccount", mock.Anything, param).
 				Return(tc.account, tc.storeError).
 				Once()
 
-			controller := NewApiController(&store)
+			controller := NewApiController(&store, nil)
 
 			rsp := httptest.NewRecorder()
 			router := gin.New()

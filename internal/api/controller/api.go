@@ -3,6 +3,7 @@ package controller
 import (
 	"database/sql"
 	"errors"
+	"github.com/alytsin/simplebank/internal/api/security"
 	"github.com/alytsin/simplebank/internal/db"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -10,12 +11,17 @@ import (
 
 type Api struct {
 	Base
-	store db.TxStoreInterface
+	store            db.TxStoreInterface
+	passwordVerifier security.PasswordInterface
 }
 
-func NewApiController(store db.TxStoreInterface) *Api {
+func NewApiController(
+	store db.TxStoreInterface,
+	passwordVerifier security.PasswordInterface,
+) *Api {
 	return &Api{
-		store: store,
+		store:            store,
+		passwordVerifier: passwordVerifier,
 	}
 }
 
@@ -32,7 +38,7 @@ func (c *Api) CreateAccount(ctx *gin.Context) {
 		Balance:  0,
 	}
 
-	account, err := c.store.CreateAccount(ctx, &arg)
+	account, err := c.store.CreateAccount(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err.Error()})
 		return
@@ -60,4 +66,13 @@ func (c *Api) GetAccount(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, account)
+}
+
+func (c *Api) CreateTransfer(ctx *gin.Context) {
+	var req CreateAccountRequest
+
+	if !c.validateJsonOrSendBadRequest(ctx, &req) {
+		return
+	}
+
 }
