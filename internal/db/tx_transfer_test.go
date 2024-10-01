@@ -26,7 +26,7 @@ func TestTransferTx(t *testing.T) {
 
 	for i := 0; i < times; i++ {
 		go func() {
-			result, err := txStore.Transfer(context.Background(), &TransferTxParams{
+			result, err := txStore.Transfer(context.Background(), TransferTxParams{
 				FromAccountID: from.ID,
 				ToAccountID:   to.ID,
 				Amount:        amount,
@@ -120,7 +120,7 @@ func TestTransferTwoWaysTx(t *testing.T) {
 			}
 
 			ctx := context.Background()
-			_, err := txStore.Transfer(ctx, &TransferTxParams{
+			_, err := txStore.Transfer(ctx, TransferTxParams{
 				FromAccountID: fId,
 				ToAccountID:   tId,
 				Amount:        amount,
