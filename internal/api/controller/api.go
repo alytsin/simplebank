@@ -54,10 +54,10 @@ func (c *Api) GetAccount(ctx *gin.Context) {
 		return
 	}
 
-	account, err := c.store.GetAccount(ctx, req.ID)
+	account, err := c.store.GetAccount(ctx, req.Id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			ctx.JSON(http.StatusNotFound, ErrorMessage{Error: err.Error()})
+			ctx.JSON(http.StatusNotFound, "")
 			return
 		}
 
@@ -68,11 +68,28 @@ func (c *Api) GetAccount(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, account)
 }
 
-func (c *Api) CreateTransfer(ctx *gin.Context) {
-	var req CreateAccountRequest
+func (c *Api) ListAccounts(ctx *gin.Context) {
+	var req ListAccountsRequest
 
-	if !c.validateJsonOrSendBadRequest(ctx, &req) {
+	if !c.validateQueryOrSendBadRequest(ctx, &req) {
 		return
 	}
 
+	accounts, err := c.store.ListAccounts(ctx, db.ListAccountsParams{
+		Limit:  req.PageSize,
+		Offset: (req.Page - 1) * req.PageSize,
+	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusNotFound, "")
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, accounts)
 }
+
+//func (c *Api) CreateTransfer(ctx *gin.Context) {
+//
+//}

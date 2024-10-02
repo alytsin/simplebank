@@ -10,7 +10,12 @@ type CreateAccountRequest struct {
 }
 
 type GetAccountRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
+	Id int64 `uri:"id" binding:"required,min=1"`
+}
+
+type ListAccountsRequest struct {
+	Page     int32 `form:"page" binding:"required,min=1"`
+	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
 }
 
 type TransferRequest struct {

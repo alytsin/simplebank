@@ -170,3 +170,82 @@ func TestCreateAccount(t *testing.T) {
 	}
 
 }
+
+func TestListAccounts(t *testing.T) {
+
+	date := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	cases := []struct {
+		name        string
+		queryString string
+		httpStatus  int
+		resultList  []*db.Account
+		storeError  error
+	}{
+		{
+			name:        "zero page",
+			queryString: "page=0",
+			httpStatus:  http.StatusBadRequest,
+		},
+		{
+			name:        "zero page size",
+			queryString: "page=1",
+			httpStatus:  http.StatusBadRequest,
+		},
+		{
+			name:        "page size too big",
+			queryString: "page=1&page_size=100",
+			httpStatus:  http.StatusBadRequest,
+		},
+		{
+			name:        "ok",
+			queryString: "page=1&page_size=5",
+			httpStatus:  http.StatusOK,
+			resultList: []*db.Account{
+				{ID: 1, Owner: "owl", Currency: "USD", Balance: 0, CreatedAt: date},
+				{ID: 2, Owner: "eye", Currency: "EUR", Balance: 0, CreatedAt: date},
+			},
+		},
+		{
+			name:        "not found",
+			queryString: "page=1&page_size=5",
+			httpStatus:  http.StatusNotFound,
+			storeError:  sql.ErrNoRows,
+		},
+		{
+			name:        "internal server error",
+			queryString: "page=1&page_size=5",
+			httpStatus:  http.StatusInternalServerError,
+			storeError:  errors.New("error"),
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			store := dbmock.TxStore{}
+			store.On("ListAccounts", mock.Anything, mock.Anything).
+				Return(tc.resultList, tc.storeError).
+				Once()
+
+			controller := NewApiController(&store, nil)
+
+			rsp := httptest.NewRecorder()
+			router := gin.New()
+			router.GET("/", controller.ListAccounts)
+
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/?%s", tc.queryString), nil)
+			router.ServeHTTP(rsp, req)
+
+			if tc.resultList != nil {
+				var result []*db.Account
+
+				err := json.Unmarshal(rsp.Body.Bytes(), &result)
+				assert.NoError(t, err)
+				assert.Equal(t, result, tc.resultList)
+			}
+
+			assert.Equal(t, tc.httpStatus, rsp.Code)
+		})
+	}
+}
