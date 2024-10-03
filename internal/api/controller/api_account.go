@@ -43,7 +43,7 @@ func (c *Api) GetAccount(ctx *gin.Context) {
 	account, err := c.store.GetAccount(ctx, req.Id)
 	if err != nil {
 		if errors.Is(db.TranslateError(err), db.ErrNoRows) {
-			ctx.JSON(http.StatusNotFound, "")
+			ctx.String(http.StatusNotFound, "")
 			return
 		}
 
@@ -67,7 +67,7 @@ func (c *Api) ListAccounts(ctx *gin.Context) {
 	})
 	if err != nil {
 		if errors.Is(db.TranslateError(err), db.ErrNoRows) {
-			ctx.JSON(http.StatusNotFound, "")
+			ctx.String(http.StatusNotFound, "")
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err.Error()})
