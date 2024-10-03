@@ -223,7 +223,7 @@ func TestListAccounts(t *testing.T) {
 			name:        "not found",
 			queryString: "page=1&page_size=5",
 			httpStatus:  http.StatusNotFound,
-			storeError:  db.ErrNoRows,
+			storeError:  sql.ErrNoRows,
 		},
 		{
 			name:        "internal server error",

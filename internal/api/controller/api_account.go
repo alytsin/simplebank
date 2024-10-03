@@ -66,7 +66,7 @@ func (c *Api) ListAccounts(ctx *gin.Context) {
 		Offset: (req.Page - 1) * req.PageSize,
 	})
 	if err != nil {
-		if errors.Is(err, db.ErrNoRows) {
+		if errors.Is(db.TranslateError(err), db.ErrNoRows) {
 			ctx.JSON(http.StatusNotFound, "")
 			return
 		}
