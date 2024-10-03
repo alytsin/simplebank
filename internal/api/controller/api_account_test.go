@@ -207,7 +207,7 @@ func TestListAccounts(t *testing.T) {
 		},
 		{
 			name:        "page size too big",
-			queryString: "page=1&page_size=100",
+			queryString: "page=1&page_size=150",
 			httpStatus:  http.StatusBadRequest,
 		},
 		{
