@@ -10,6 +10,16 @@ type TxStore struct {
 	mock.Mock
 }
 
+func (s *TxStore) GetUser(ctx context.Context, username string) (*db.User, error) {
+	args := s.Called(ctx, username)
+	return args.Get(0).(*db.User), args.Error(1)
+}
+
+func (s *TxStore) CreateUser(ctx context.Context, arg db.CreateUserParams) (*db.User, error) {
+	args := s.Called(ctx, arg)
+	return args.Get(0).(*db.User), args.Error(1)
+}
+
 func (s *TxStore) Transfer(ctx context.Context, arg db.TransferTxParams) (*db.TransferTxResult, error) {
 	args := s.Called(ctx, arg)
 	return args.Get(0).(*db.TransferTxResult), args.Error(1)
