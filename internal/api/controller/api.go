@@ -20,7 +20,3 @@ func NewApiController(
 		passwordVerifier: passwordVerifier,
 	}
 }
-
-//func (c *Api) CreateTransfer(ctx *gin.Context) {
-//
-//}
