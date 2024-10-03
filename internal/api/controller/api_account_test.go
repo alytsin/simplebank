@@ -9,6 +9,7 @@ import (
 	"github.com/alytsin/simplebank/internal/db"
 	dbmock "github.com/alytsin/simplebank/internal/db/mock"
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"net/http"
@@ -106,6 +107,18 @@ func TestCreateAccount(t *testing.T) {
 			account:    &db.Account{ID: 1, Owner: "owner", Currency: "USD", Balance: 0, CreatedAt: date},
 			httpStatus: http.StatusCreated,
 			storeError: nil,
+		},
+		{
+			name:       "account unique violation",
+			params:     &db.CreateAccountParams{Owner: "owner", Currency: "USD"},
+			httpStatus: http.StatusConflict,
+			storeError: &pq.Error{Code: "23505"},
+		},
+		{
+			name:       "account foreign key violation",
+			params:     &db.CreateAccountParams{Owner: "owner", Currency: "USD"},
+			httpStatus: http.StatusConflict,
+			storeError: &pq.Error{Code: "23503"},
 		},
 		{
 			name:       "bad currency",
@@ -210,7 +223,7 @@ func TestListAccounts(t *testing.T) {
 			name:        "not found",
 			queryString: "page=1&page_size=5",
 			httpStatus:  http.StatusNotFound,
-			storeError:  sql.ErrNoRows,
+			storeError:  db.ErrNoRows,
 		},
 		{
 			name:        "internal server error",

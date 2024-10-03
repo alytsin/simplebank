@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"database/sql"
 	"errors"
 	"github.com/alytsin/simplebank/internal/db"
 	"github.com/gin-gonic/gin"
@@ -23,6 +22,10 @@ func (c *Api) CreateAccount(ctx *gin.Context) {
 
 	account, err := c.store.CreateAccount(ctx, arg)
 	if err != nil {
+		if errors.Is(db.TranslateError(err), db.ErrUniqueViolation) {
+			ctx.JSON(http.StatusConflict, ErrorMessage{Error: err.Error()})
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err.Error()})
 		return
 	}
@@ -39,7 +42,7 @@ func (c *Api) GetAccount(ctx *gin.Context) {
 
 	account, err := c.store.GetAccount(ctx, req.Id)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(db.TranslateError(err), db.ErrNoRows) {
 			ctx.JSON(http.StatusNotFound, "")
 			return
 		}
@@ -63,7 +66,7 @@ func (c *Api) ListAccounts(ctx *gin.Context) {
 		Offset: (req.Page - 1) * req.PageSize,
 	})
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, db.ErrNoRows) {
 			ctx.JSON(http.StatusNotFound, "")
 			return
 		}
