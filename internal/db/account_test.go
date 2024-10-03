@@ -75,6 +75,20 @@ func TestUpdateAccount(t *testing.T) {
 	//_ = testQueries.DeleteAccount(context.Background(), created.ID)
 }
 
+func TestDuplicateAccount(t *testing.T) {
+
+	created := createRandomAccount(t)
+
+	dup, err := testQueries.CreateAccount(context.Background(), CreateAccountParams{
+		Owner:    created.Owner,
+		Currency: created.Currency,
+		Balance:  0,
+	})
+
+	require.Error(t, err)
+	require.Empty(t, dup)
+}
+
 func TestDeleteAccount(t *testing.T) {
 	created := createRandomAccount(t)
 
