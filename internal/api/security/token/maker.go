@@ -16,8 +16,19 @@ type PasetoMaker struct {
 	dataKey    string
 }
 
-func NewPasetoMaker() (*PasetoMaker, error) {
-	privateKey := paseto.NewV4AsymmetricSecretKey()
+func NewPasetoMaker(hexPrivateKey string) (*PasetoMaker, error) {
+
+	var err error
+	var privateKey paseto.V4AsymmetricSecretKey
+
+	if hexPrivateKey != "" {
+		if privateKey, err = paseto.NewV4AsymmetricSecretKeyFromBytes([]byte(hexPrivateKey)); err != nil {
+			return nil, err
+		}
+	} else {
+		privateKey = paseto.NewV4AsymmetricSecretKey()
+	}
+
 	return &PasetoMaker{
 		dataKey:    "data",
 		privateKey: privateKey,

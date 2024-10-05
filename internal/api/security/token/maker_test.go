@@ -8,7 +8,7 @@ import (
 
 func TestCreateVerifyToken(t *testing.T) {
 
-	m, err := NewPasetoMaker()
+	m, err := NewPasetoMaker("")
 	assert.Nil(t, err)
 	assert.NotEmpty(t, m)
 
