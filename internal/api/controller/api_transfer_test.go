@@ -46,13 +46,13 @@ func TestValidateAccountForTransfer(t *testing.T) {
 	cases := []struct {
 		name          string
 		body          *TransferRequest
-		stubs         func(s *dbmock.TxStore)
+		stubs         func(s *dbmock.MockTxStoreInterface)
 		responseCheck func(recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name: "transfer error",
 			body: req,
-			stubs: func(s *dbmock.TxStore) {
+			stubs: func(s *dbmock.MockTxStoreInterface) {
 
 				s.On("ValidAccountIdWithCurrency", mock.Anything, db.ValidAccountIdWithCurrencyParams{
 					ID:       acc1.ID,
@@ -77,7 +77,7 @@ func TestValidateAccountForTransfer(t *testing.T) {
 		{
 			name: "second account error",
 			body: req,
-			stubs: func(s *dbmock.TxStore) {
+			stubs: func(s *dbmock.MockTxStoreInterface) {
 				s.On("ValidAccountIdWithCurrency", mock.Anything, db.ValidAccountIdWithCurrencyParams{
 					ID:       acc1.ID,
 					Currency: USD,
@@ -98,7 +98,7 @@ func TestValidateAccountForTransfer(t *testing.T) {
 		{
 			name: "first account not found",
 			body: req,
-			stubs: func(s *dbmock.TxStore) {
+			stubs: func(s *dbmock.MockTxStoreInterface) {
 				s.On("ValidAccountIdWithCurrency", mock.Anything, db.ValidAccountIdWithCurrencyParams{
 					ID:       acc1.ID,
 					Currency: USD,
@@ -115,7 +115,7 @@ func TestValidateAccountForTransfer(t *testing.T) {
 		{
 			name: "OK",
 			body: req,
-			stubs: func(s *dbmock.TxStore) {
+			stubs: func(s *dbmock.MockTxStoreInterface) {
 
 				s.On("ValidAccountIdWithCurrency", mock.Anything, db.ValidAccountIdWithCurrencyParams{
 					ID:       acc1.ID,
@@ -164,7 +164,7 @@ func TestValidateAccountForTransfer(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 
-			store := dbmock.TxStore{}
+			store := dbmock.MockTxStoreInterface{}
 			if c.stubs != nil {
 				c.stubs(&store)
 			}

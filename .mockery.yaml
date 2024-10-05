@@ -1,0 +1,10 @@
+dry-run: false
+with-expecter: false
+filename: "mock_{{.InterfaceName}}.go"
+mockname: "Mock{{.InterfaceName}}"
+dir: "{{.InterfaceDir}}/mock"
+outpkg: "mock"
+packages:
+  github.com/alytsin/simplebank/internal/db:
+    interfaces:
+      TxStoreInterface:

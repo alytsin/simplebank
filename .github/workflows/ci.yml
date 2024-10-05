@@ -29,18 +29,18 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install golang-migrate
-        run: |
-          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.18.0/migrate.linux-amd64.tar.gz | tar xvz
-          sudo mv migrate /usr/bin/migrate
-          which migrate
+#      - name: Install golang-migrate
+#        run: |
+#          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.18.0/migrate.linux-amd64.tar.gz | tar xvz
+#          sudo mv migrate /usr/bin/migrate
+#          which migrate
 
-      - name: Install go-enum
-        run: |
-          curl -fsSL "https://github.com/abice/go-enum/releases/download/v0.6.0/go-enum_Linux_x86_64" -o go-enum
-          sudo mv go-enum /usr/bin/go-enum
-          sudo chmod +x /usr/bin/go-enum
-          which go-enum
+#      - name: Install go-enum
+#        run: |
+#          curl -fsSL "https://github.com/abice/go-enum/releases/download/v0.6.0/go-enum_Linux_x86_64" -o go-enum
+#          sudo mv go-enum /usr/bin/go-enum
+#          sudo chmod +x /usr/bin/go-enum
+#          which go-enum
 
       - name: Run migrations
         run: make migrateup

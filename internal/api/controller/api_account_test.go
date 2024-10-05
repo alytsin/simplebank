@@ -72,7 +72,7 @@ func TestGetAccount(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			store := dbmock.TxStore{}
+			store := dbmock.MockTxStoreInterface{}
 			store.On("GetAccount", mock.Anything, tc.clientId).
 				Return(tc.foundAccount, tc.err).
 				Once()
@@ -158,7 +158,7 @@ func TestCreateAccount(t *testing.T) {
 
 			var param interface{}
 
-			store := dbmock.TxStore{}
+			store := dbmock.MockTxStoreInterface{}
 			if tc.params != nil {
 				param = *tc.params
 			}
@@ -246,7 +246,7 @@ func TestListAccounts(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			store := dbmock.TxStore{}
+			store := dbmock.MockTxStoreInterface{}
 			store.On("ListAccounts", mock.Anything, mock.Anything).
 				Return(tc.resultList, tc.storeError).
 				Once()

@@ -27,5 +27,7 @@ test:
 generate:
 	go generate ./...
 
+mock:
+	mockery
 
-.PHONY: network postgres sqlc createdb dropdb migrateup migratedown test generate
+.PHONY: network postgres sqlc createdb dropdb migrateup migratedown test generate mock

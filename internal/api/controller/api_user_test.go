@@ -115,7 +115,7 @@ func TestCreateUser(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			store := dbmock.TxStore{}
+			store := dbmock.MockTxStoreInterface{}
 
 			var param interface{}
 			if tc.createParams != nil {
