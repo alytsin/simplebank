@@ -1,7 +1,21 @@
 package controller
 
+import (
+	"encoding/json"
+)
+
 type ErrorMessage struct {
-	Error string `json:"error" example:"Something wrong"`
+	Error error `json:"error" example:"Something wrong"`
+}
+
+func (r ErrorMessage) MarshalJSON() ([]byte, error) {
+	var msg string
+	if r.Error != nil {
+		msg = r.Error.Error()
+	}
+	return json.Marshal(map[string]string{
+		"error": msg,
+	})
 }
 
 type CreateAccountRequest struct {

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/alytsin/simplebank/internal/db"
 	dbmock "github.com/alytsin/simplebank/internal/db/mock"
+	"github.com/alytsin/simplebank/internal/util"
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
@@ -17,6 +18,15 @@ import (
 	"testing"
 	"time"
 )
+
+func randomAccount(owner string) db.Account {
+	return db.Account{
+		ID:       util.RandomInt(1, 1000),
+		Owner:    owner,
+		Balance:  util.RandomMoney(),
+		Currency: util.RandomCurrency(),
+	}
+}
 
 func TestGetAccount(t *testing.T) {
 

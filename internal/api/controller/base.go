@@ -25,7 +25,7 @@ func (c *Base) validateQueryOrSendBadRequest(ctx *gin.Context, v interface{}) bo
 }
 
 func (c *Base) doBadRequest(ctx *gin.Context, err error) {
-	ctx.JSON(http.StatusBadRequest, ErrorMessage{Error: err.Error()})
+	ctx.JSON(http.StatusBadRequest, ErrorMessage{Error: err})
 }
 
 func (c *Base) validateUriOrSendBadRequest(ctx *gin.Context, v interface{}) bool {

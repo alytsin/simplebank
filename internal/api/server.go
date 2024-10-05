@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/alytsin/simplebank/internal/api/controller"
+	"github.com/alytsin/simplebank/internal/api/security/token"
 	val "github.com/alytsin/simplebank/internal/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -10,6 +11,7 @@ import (
 
 type Server struct {
 	controller *controller.Api
+	tokenMaker token.Maker
 }
 
 func NewServer(controller *controller.Api) *Server {
@@ -30,6 +32,7 @@ func (s *Server) Run() error {
 	_ = router.SetTrustedProxies(nil)
 
 	router.POST("/users", s.controller.CreateUser)
+	router.POST("/transfers", s.controller.CreateTransfer)
 
 	router.GET("/accounts", s.controller.ListAccounts)
 	router.GET("/account/:id", s.controller.GetAccount)

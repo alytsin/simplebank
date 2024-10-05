@@ -31,7 +31,7 @@ func (store *TxStore) execTx(ctx context.Context, fn func(*Queries) error) error
 
 	if err = fn(New(tx)); err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			return fmt.Errorf("tx err: %v, rb err: %v", err, rbErr)
+			return fmt.Errorf("transaction err: %v, rollback err: %v", err, rbErr)
 		}
 		return err
 	}

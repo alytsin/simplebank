@@ -23,10 +23,10 @@ func (c *Api) CreateAccount(ctx *gin.Context) {
 	account, err := c.store.CreateAccount(ctx, arg)
 	if err != nil {
 		if errors.Is(db.TranslateError(err), db.ErrUniqueViolation) {
-			ctx.JSON(http.StatusConflict, ErrorMessage{Error: err.Error()})
+			ctx.JSON(http.StatusConflict, ErrorMessage{Error: err})
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err.Error()})
+		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err})
 		return
 	}
 
@@ -47,7 +47,7 @@ func (c *Api) GetAccount(ctx *gin.Context) {
 			return
 		}
 
-		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err.Error()})
+		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err})
 		return
 	}
 
@@ -70,7 +70,7 @@ func (c *Api) ListAccounts(ctx *gin.Context) {
 			ctx.String(http.StatusNotFound, "")
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err.Error()})
+		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err})
 		return
 	}
 	ctx.JSON(http.StatusOK, accounts)

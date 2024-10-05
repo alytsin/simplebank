@@ -10,6 +10,11 @@ type TxStore struct {
 	mock.Mock
 }
 
+func (s *TxStore) ValidAccountIdWithCurrency(ctx context.Context, arg db.ValidAccountIdWithCurrencyParams) (*db.Account, error) {
+	args := s.Called(ctx, arg)
+	return args.Get(0).(*db.Account), args.Error(1)
+}
+
 func (s *TxStore) GetUser(ctx context.Context, username string) (*db.User, error) {
 	args := s.Called(ctx, username)
 	return args.Get(0).(*db.User), args.Error(1)

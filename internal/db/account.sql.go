@@ -176,3 +176,26 @@ func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) (*
 	)
 	return &i, err
 }
+
+const validAccountIdWithCurrency = `-- name: ValidAccountIdWithCurrency :one
+SELECT id, owner, balance, currency, created_at FROM accounts
+WHERE id = $1 AND currency = $2
+`
+
+type ValidAccountIdWithCurrencyParams struct {
+	ID       int64  `json:"id"`
+	Currency string `json:"currency"`
+}
+
+func (q *Queries) ValidAccountIdWithCurrency(ctx context.Context, arg ValidAccountIdWithCurrencyParams) (*Account, error) {
+	row := q.db.QueryRowContext(ctx, validAccountIdWithCurrency, arg.ID, arg.Currency)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.Owner,
+		&i.Balance,
+		&i.Currency,
+		&i.CreatedAt,
+	)
+	return &i, err
+}

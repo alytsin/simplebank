@@ -16,7 +16,7 @@ func (c *Api) CreateUser(ctx *gin.Context) {
 
 	hash, err := c.passwordVerifier.Hash(req.Password)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err.Error()})
+		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err})
 		return
 	}
 
@@ -30,10 +30,10 @@ func (c *Api) CreateUser(ctx *gin.Context) {
 	user, err := c.store.CreateUser(ctx, arg)
 	if err != nil {
 		if errors.Is(db.TranslateError(err), db.ErrUniqueViolation) {
-			ctx.JSON(http.StatusConflict, ErrorMessage{Error: err.Error()})
+			ctx.JSON(http.StatusConflict, ErrorMessage{Error: err})
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err.Error()})
+		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err})
 		return
 	}
 
