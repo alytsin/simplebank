@@ -2,7 +2,6 @@ package api
 
 import (
 	"github.com/alytsin/simplebank/internal/api/controller"
-	"github.com/alytsin/simplebank/internal/api/security/token"
 	val "github.com/alytsin/simplebank/internal/validator"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -11,7 +10,6 @@ import (
 
 type Server struct {
 	controller *controller.Api
-	tokenMaker token.Maker
 }
 
 func NewServer(controller *controller.Api) *Server {
@@ -25,18 +23,21 @@ func NewServer(controller *controller.Api) *Server {
 	}
 }
 
-func (s *Server) Run() error {
+func (s *Server) Run(listen string) error {
 
 	router := gin.Default()
-	router.Use(gin.Recovery())
+	//router.Use(gin.Recovery())
 	_ = router.SetTrustedProxies(nil)
 
 	router.POST("/users", s.controller.CreateUser)
-	router.POST("/transfers", s.controller.CreateTransfer)
+	router.POST("/users/login", s.controller.LoginUser)
 
-	router.GET("/accounts", s.controller.ListAccounts)
-	router.GET("/account/:id", s.controller.GetAccount)
-	router.POST("/accounts", s.controller.CreateAccount)
+	authGroup := router.Group("/").Use(s.controller.AuthMiddleware())
 
-	return router.Run(":8080")
+	authGroup.POST("/transfers", s.controller.CreateTransfer)
+	authGroup.GET("/accounts", s.controller.ListAccounts)
+	authGroup.GET("/account/:id", s.controller.GetAccount)
+	authGroup.POST("/accounts", s.controller.CreateAccount)
+
+	return router.Run(listen)
 }

@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"github.com/alytsin/simplebank/internal/api/security/token"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
@@ -14,7 +13,7 @@ const (
 	authorizationPayloadKey = "auth"
 )
 
-func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
+func (c *Api) AuthMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 		authHeader := ctx.GetHeader(authorizationHeader)
@@ -36,7 +35,7 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 			return
 		}
 
-		payload, err := tokenMaker.VerifyToken(fields[1])
+		payload, err := c.tokenMaker.VerifyToken(fields[1])
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, ErrorMessage{Error: err})
 			return

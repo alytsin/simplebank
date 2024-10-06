@@ -1,6 +1,8 @@
 package security
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"golang.org/x/crypto/bcrypt"
+)
 
 type PasswordInterface interface {
 	Hash(password string) (string, error)

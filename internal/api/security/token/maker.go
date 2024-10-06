@@ -22,7 +22,7 @@ func NewPasetoMaker(hexPrivateKey string) (*PasetoMaker, error) {
 	var privateKey paseto.V4AsymmetricSecretKey
 
 	if hexPrivateKey != "" {
-		if privateKey, err = paseto.NewV4AsymmetricSecretKeyFromBytes([]byte(hexPrivateKey)); err != nil {
+		if privateKey, err = paseto.NewV4AsymmetricSecretKeyFromHex(hexPrivateKey); err != nil {
 			return nil, err
 		}
 	} else {

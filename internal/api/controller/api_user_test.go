@@ -126,7 +126,7 @@ func TestCreateUser(t *testing.T) {
 				Return(user, tc.storeError).
 				Once()
 
-			controller := NewApiController(&store, new(security.PasswordPlain))
+			controller := NewApiController(&store, nil, new(security.PasswordPlain))
 
 			rsp := httptest.NewRecorder()
 			router := gin.New()
