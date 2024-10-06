@@ -57,11 +57,17 @@ func TestCreateUser(t *testing.T) {
 				data, err := io.ReadAll(recorder.Body)
 				assert.NoError(t, err)
 
-				var u db.User
+				var u CreateUserResponse
 				err = json.Unmarshal(data, &u)
 				assert.NoError(t, err)
 
-				assert.Equal(t, user, &u)
+				assert.Equal(t, &CreateUserResponse{
+					Username:          user.Username,
+					FullName:          user.FullName,
+					Email:             user.Email,
+					PasswordChangedAt: user.PasswordChangedAt,
+					CreatedAt:         user.CreatedAt,
+				}, &u)
 				assert.Equal(t, http.StatusCreated, recorder.Code)
 			},
 		},
