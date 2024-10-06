@@ -28,11 +28,13 @@ func main() {
 		log.Fatal("unable to create token maker:", err)
 	}
 
-	server := api.NewServer(controller.NewApiController(
+	cntrlr := controller.NewApiController(
 		db.NewTxStore(database),
 		tokenMaker,
 		new(security.Password),
-	))
+	).SetTokenTTL(config.AccessTokenTTL)
+
+	server := api.NewServer(cntrlr)
 
 	log.Println(server.Run(config.ServerAddress))
 }

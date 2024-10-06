@@ -6,7 +6,6 @@ import (
 	"github.com/alytsin/simplebank/internal/db"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"time"
 )
 
 func (c *Api) CreateUser(ctx *gin.Context) {
@@ -39,7 +38,13 @@ func (c *Api) CreateUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, user)
+	ctx.JSON(http.StatusCreated, CreateUserResponse{
+		Username:          user.Username,
+		FullName:          user.FullName,
+		Email:             user.Email,
+		PasswordChangedAt: user.PasswordChangedAt,
+		CreatedAt:         user.CreatedAt,
+	})
 }
 
 func (c *Api) LoginUser(ctx *gin.Context) {
@@ -64,7 +69,7 @@ func (c *Api) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	token, err := c.tokenMaker.CreateToken(token2.NewPayload(user.Username), time.Hour)
+	token, err := c.tokenMaker.CreateToken(token2.NewPayload(user.Username), c.tokenTTL)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err})
 		return
