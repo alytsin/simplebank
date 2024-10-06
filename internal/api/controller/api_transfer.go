@@ -3,6 +3,7 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"github.com/alytsin/simplebank/internal/api/security/token"
 	"github.com/alytsin/simplebank/internal/db"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -17,8 +18,14 @@ func (c *Api) CreateTransfer(ctx *gin.Context) {
 		return
 	}
 
-	_, valid := c.validateAccountForTransfer(ctx, req.FromAccountID, req.Currency)
+	accountFrom, valid := c.validateAccountForTransfer(ctx, req.FromAccountID, req.Currency)
 	if !valid {
+		return
+	}
+
+	payload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if payload.Username != accountFrom.Owner {
+		ctx.JSON(http.StatusUnauthorized, ErrorMessage{Error: fmt.Errorf("not yours account")})
 		return
 	}
 

@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+const (
+	tokenDataKey = "data"
+)
+
 type Maker interface {
 	CreateToken(payload *Payload, duration time.Duration) (string, error)
 	VerifyToken(string) (*Payload, error)
@@ -30,7 +34,7 @@ func NewPasetoMaker(hexPrivateKey string) (*PasetoMaker, error) {
 	}
 
 	return &PasetoMaker{
-		dataKey:    "data",
+		dataKey:    tokenDataKey,
 		privateKey: privateKey,
 		publicKey:  privateKey.Public(),
 	}, nil

@@ -2,6 +2,8 @@ package controller
 
 import (
 	"errors"
+	"fmt"
+	"github.com/alytsin/simplebank/internal/api/security/token"
 	"github.com/alytsin/simplebank/internal/db"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -14,8 +16,10 @@ func (c *Api) CreateAccount(ctx *gin.Context) {
 		return
 	}
 
+	payload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	arg := db.CreateAccountParams{
-		Owner:    req.Owner,
+		Owner:    payload.Username,
 		Currency: req.Currency,
 		Balance:  0,
 	}
@@ -51,6 +55,12 @@ func (c *Api) GetAccount(ctx *gin.Context) {
 		return
 	}
 
+	payload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if account.Owner != payload.Username {
+		ctx.JSON(http.StatusUnauthorized, ErrorMessage{Error: fmt.Errorf("not yours account")})
+		return
+	}
+
 	ctx.JSON(http.StatusOK, account)
 }
 
@@ -61,7 +71,10 @@ func (c *Api) ListAccounts(ctx *gin.Context) {
 		return
 	}
 
+	payload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	accounts, err := c.store.ListAccounts(ctx, db.ListAccountsParams{
+		Owner:  payload.Username,
 		Limit:  req.PageSize,
 		Offset: (req.Page - 1) * req.PageSize,
 	})

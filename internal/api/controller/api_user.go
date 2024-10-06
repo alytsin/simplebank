@@ -2,7 +2,7 @@ package controller
 
 import (
 	"errors"
-	token2 "github.com/alytsin/simplebank/internal/api/security/token"
+	"github.com/alytsin/simplebank/internal/api/security/token"
 	"github.com/alytsin/simplebank/internal/db"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -69,12 +69,12 @@ func (c *Api) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	token, err := c.tokenMaker.CreateToken(token2.NewPayload(user.Username), c.tokenTTL)
+	newToken, err := c.tokenMaker.CreateToken(token.NewPayload(user.Username), c.tokenTTL)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, LoginUserResponse{Token: token})
+	ctx.JSON(http.StatusOK, LoginUserResponse{Token: newToken})
 
 }

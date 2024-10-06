@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/alytsin/simplebank/internal/api/security"
+	"github.com/alytsin/simplebank/internal/api/security/token"
 	"github.com/alytsin/simplebank/internal/db"
 	dbmock "github.com/alytsin/simplebank/internal/db/mock"
 	"github.com/alytsin/simplebank/internal/validator"
@@ -13,13 +15,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
+	"time"
 )
 
 func TestValidateAccountForTransfer(t *testing.T) {
+
+	tokenMaker, _ := token.NewPasetoMaker("")
 
 	EUR := validator.CurrencyEUR.String()
 	USD := validator.CurrencyUSD.String()
@@ -46,6 +52,7 @@ func TestValidateAccountForTransfer(t *testing.T) {
 	cases := []struct {
 		name          string
 		body          *TransferRequest
+		setupAuth     func(t *testing.T, request *http.Request)
 		stubs         func(s *dbmock.MockTxStoreInterface)
 		responseCheck func(recorder *httptest.ResponseRecorder)
 	}{
@@ -57,16 +64,21 @@ func TestValidateAccountForTransfer(t *testing.T) {
 				s.On("ValidAccountIdWithCurrency", mock.Anything, db.ValidAccountIdWithCurrencyParams{
 					ID:       acc1.ID,
 					Currency: USD,
-				}).Return(&db.Account{ID: acc1.ID, Currency: USD}, nil).Once()
+				}).Return(&db.Account{ID: acc1.ID, Currency: USD, Owner: acc1.Owner}, nil).Once()
 
 				s.On("ValidAccountIdWithCurrency", mock.Anything, db.ValidAccountIdWithCurrencyParams{
 					ID:       acc2.ID,
 					Currency: USD,
-				}).Return(&db.Account{ID: acc2.ID, Currency: USD}, nil).Once()
+				}).Return(&db.Account{ID: acc2.ID, Currency: USD, Owner: acc2.Owner}, nil).Once()
 
 				s.On("Transfer", mock.Anything, mock.Anything).
 					Return(&db.TransferTxResult{}, errors.New("omg")).
 					Once()
+			},
+			setupAuth: func(t *testing.T, request *http.Request) {
+				tk, err := tokenMaker.CreateToken(token.NewPayload(acc1.Owner), time.Minute)
+				assert.NoError(t, err)
+				request.Header.Set(authorizationHeader, fmt.Sprintf("%s %s", authorizationTypeBearer, tk))
 			},
 			responseCheck: func(recorder *httptest.ResponseRecorder) {
 				body := recorder.Body.String()
@@ -81,13 +93,18 @@ func TestValidateAccountForTransfer(t *testing.T) {
 				s.On("ValidAccountIdWithCurrency", mock.Anything, db.ValidAccountIdWithCurrencyParams{
 					ID:       acc1.ID,
 					Currency: USD,
-				}).Return(&db.Account{ID: acc1.ID, Currency: USD}, nil).Once()
+				}).Return(&db.Account{ID: acc1.ID, Currency: USD, Owner: acc1.Owner}, nil).Once()
 
 				s.On("ValidAccountIdWithCurrency", mock.Anything, db.ValidAccountIdWithCurrencyParams{
 					ID:       acc2.ID,
 					Currency: USD,
 				}).Return(&db.Account{}, errors.New("xyz")).Once()
 				s.On("Transfer", mock.Anything, mock.Anything).Times(0)
+			},
+			setupAuth: func(t *testing.T, request *http.Request) {
+				tk, err := tokenMaker.CreateToken(token.NewPayload(acc1.Owner), time.Minute)
+				assert.NoError(t, err)
+				request.Header.Set(authorizationHeader, fmt.Sprintf("%s %s", authorizationTypeBearer, tk))
 			},
 			responseCheck: func(recorder *httptest.ResponseRecorder) {
 				body := recorder.Body.String()
@@ -105,11 +122,40 @@ func TestValidateAccountForTransfer(t *testing.T) {
 				}).Return(&db.Account{}, sql.ErrNoRows).Once()
 				s.On("Transfer", mock.Anything, mock.Anything).Times(0)
 			},
+			setupAuth: func(t *testing.T, request *http.Request) {
+				tk, err := tokenMaker.CreateToken(token.NewPayload(acc1.Owner), time.Minute)
+				assert.NoError(t, err)
+				request.Header.Set(authorizationHeader, fmt.Sprintf("%s %s", authorizationTypeBearer, tk))
+			},
 			responseCheck: func(recorder *httptest.ResponseRecorder) {
 				body := recorder.Body.String()
 				assert.Contains(t, body, "does not exist")
 				assert.Contains(t, body, strconv.FormatInt(acc1.ID, 10))
 				assert.Equal(t, http.StatusUnprocessableEntity, recorder.Code)
+			},
+		},
+		{
+			name: "not yours account",
+			body: req,
+			stubs: func(s *dbmock.MockTxStoreInterface) {
+
+				s.On("ValidAccountIdWithCurrency", mock.Anything, db.ValidAccountIdWithCurrencyParams{
+					ID:       acc1.ID,
+					Currency: USD,
+				}).Return(&db.Account{ID: acc1.ID, Currency: USD, Owner: acc1.Owner}, nil).Twice()
+
+				s.On("Transfer", mock.Anything, mock.Anything).Times(0)
+			},
+			setupAuth: func(t *testing.T, request *http.Request) {
+				tk, err := tokenMaker.CreateToken(token.NewPayload(acc2.Owner), time.Minute)
+				assert.NoError(t, err)
+				request.Header.Set(authorizationHeader, fmt.Sprintf("%s %s", authorizationTypeBearer, tk))
+			},
+			responseCheck: func(recorder *httptest.ResponseRecorder) {
+				body := recorder.Body.String()
+				log.Println(body)
+				assert.Contains(t, body, `not yours account"`)
+				assert.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
 		},
 		{
@@ -120,18 +166,23 @@ func TestValidateAccountForTransfer(t *testing.T) {
 				s.On("ValidAccountIdWithCurrency", mock.Anything, db.ValidAccountIdWithCurrencyParams{
 					ID:       acc1.ID,
 					Currency: USD,
-				}).Return(&db.Account{ID: acc1.ID, Currency: USD}, nil).Once()
+				}).Return(&db.Account{ID: acc1.ID, Currency: USD, Owner: acc1.Owner}, nil).Once()
 
 				s.On("ValidAccountIdWithCurrency", mock.Anything, db.ValidAccountIdWithCurrencyParams{
 					ID:       acc2.ID,
 					Currency: USD,
-				}).Return(&db.Account{ID: acc2.ID, Currency: USD}, nil).Once()
+				}).Return(&db.Account{ID: acc2.ID, Currency: USD, Owner: acc2.Owner}, nil).Once()
 
 				s.On("Transfer", mock.Anything, db.TransferTxParams{
 					FromAccountID: acc1.ID,
 					ToAccountID:   acc2.ID,
 					Amount:        5,
 				}).Return(&db.TransferTxResult{FromAccount: &acc1, ToAccount: &acc2}, nil).Once()
+			},
+			setupAuth: func(t *testing.T, request *http.Request) {
+				tk, err := tokenMaker.CreateToken(token.NewPayload(acc1.Owner), time.Minute)
+				assert.NoError(t, err)
+				request.Header.Set(authorizationHeader, fmt.Sprintf("%s %s", authorizationTypeBearer, tk))
 			},
 			responseCheck: func(recorder *httptest.ResponseRecorder) {
 				body := recorder.Body.String()
@@ -143,6 +194,11 @@ func TestValidateAccountForTransfer(t *testing.T) {
 		{
 			name: "empty body",
 			body: nil,
+			setupAuth: func(t *testing.T, request *http.Request) {
+				tk, err := tokenMaker.CreateToken(token.NewPayload(acc1.Owner), time.Minute)
+				assert.NoError(t, err)
+				request.Header.Set(authorizationHeader, fmt.Sprintf("%s %s", authorizationTypeBearer, tk))
+			},
 			responseCheck: func(recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
@@ -154,6 +210,11 @@ func TestValidateAccountForTransfer(t *testing.T) {
 				ToAccountID:   2,
 				Currency:      USD,
 				Amount:        -100,
+			},
+			setupAuth: func(t *testing.T, request *http.Request) {
+				tk, err := tokenMaker.CreateToken(token.NewPayload(acc1.Owner), time.Minute)
+				assert.NoError(t, err)
+				request.Header.Set(authorizationHeader, fmt.Sprintf("%s %s", authorizationTypeBearer, tk))
 			},
 			responseCheck: func(recorder *httptest.ResponseRecorder) {
 				assert.Equal(t, http.StatusBadRequest, recorder.Code)
@@ -169,10 +230,11 @@ func TestValidateAccountForTransfer(t *testing.T) {
 				c.stubs(&store)
 			}
 
-			controller := NewApiController(&store, nil, new(security.PasswordPlain))
+			controller := NewApiController(&store, tokenMaker, new(security.PasswordPlain))
 
 			rsp := httptest.NewRecorder()
 			router := gin.New()
+			router.Use(controller.AuthMiddleware())
 			router.POST("/", controller.CreateTransfer)
 
 			var body io.Reader
@@ -184,6 +246,7 @@ func TestValidateAccountForTransfer(t *testing.T) {
 			}
 
 			req, _ := http.NewRequest("POST", "/", body)
+			c.setupAuth(t, req)
 			router.ServeHTTP(rsp, req)
 			c.responseCheck(rsp)
 
