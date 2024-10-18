@@ -1,0 +1,52 @@
+name: simple-bank
+services:
+  api:
+    environment:
+      - GIN_MODE=release
+      - DB_SOURCE=$DB_SOURCE
+    build:
+      context: ..
+      dockerfile: deployments/api.Dockerfile
+    networks:
+      - bank-network
+    ports:
+      - "8080:8080"
+    links:
+      - postgres
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+
+  migrate:
+    image: migrate/migrate
+    volumes:
+      - ../internal/db/migration:/migrations:ro
+    command: ["-path", "/migrations", "-database", $DB_SOURCE, "up"]
+    links:
+      - postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bank-network
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=simple_bank
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    networks:
+      - bank-network
+
+networks:
+  bank-network:
+    driver: bridge
