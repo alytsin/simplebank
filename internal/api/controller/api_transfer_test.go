@@ -15,7 +15,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"io"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -153,7 +152,6 @@ func TestValidateAccountForTransfer(t *testing.T) {
 			},
 			responseCheck: func(recorder *httptest.ResponseRecorder) {
 				body := recorder.Body.String()
-				log.Println(body)
 				assert.Contains(t, body, `not yours account"`)
 				assert.Equal(t, http.StatusUnauthorized, recorder.Code)
 			},
