@@ -17,7 +17,7 @@ import (
 
 func main() {
 
-	log.Println("Starting server...")
+	log.Println("Starting server....")
 
 	config, err := internal.LoadConfig(".")
 	if err != nil {
