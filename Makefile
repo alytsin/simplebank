@@ -30,4 +30,7 @@ generate:
 mock:
 	mockery
 
-.PHONY: network postgres sqlc createdb dropdb migrateup migratedown test generate mock
+buildimage:
+	docker build -t simplebank:latest -f deployments/api.Dockerfile .
+
+.PHONY: network postgres sqlc createdb dropdb migrateup migratedown test generate mock buildimage

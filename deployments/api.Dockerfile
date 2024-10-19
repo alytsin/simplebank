@@ -8,5 +8,6 @@ FROM alpine:3.20
 WORKDIR /app
 COPY --from=builder /app/server .
 COPY config.env .
+COPY internal/db/migration ./internal/db/migration
 EXPOSE 8080
 CMD [ "/app/server" ]

@@ -2,6 +2,8 @@ package internal
 
 import (
 	"github.com/spf13/viper"
+	"log/slog"
+	"os"
 	"time"
 )
 
@@ -13,26 +15,25 @@ type Config struct {
 	ServerAddress         string        `mapstructure:"SERVER_ADDRESS"`
 	AccessTokenTTL        time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	AccessTokenPrivateKey string        `mapstructure:"TOKEN_PRIVATE_KEY"`
+	MigrationUrl          string        `mapstructure:"MIGRATION_URL"`
 }
 
 func LoadConfig(path string) (*Config, error) {
 
 	//handler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug})
-	//logger := slog.New(handler)
-	//v := viper.NewWithOptions(viper.WithLogger(logger))
-	//v.AddConfigPath(path)
-	//v.AutomaticEnv()
-
-	viper.AddConfigPath(path)
-	viper.AutomaticEnv()
+	handler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelError})
+	logger := slog.New(handler)
+	v := viper.NewWithOptions(viper.WithLogger(logger), viper.ExperimentalBindStruct())
+	v.AddConfigPath(path)
+	v.AutomaticEnv()
 
 	var config Config
 
-	if err := viper.ReadInConfig(); err != nil {
+	if err := v.ReadInConfig(); err != nil {
 		return &config, err
 	}
 
-	if err := viper.Unmarshal(&config); err != nil {
+	if err := v.Unmarshal(&config); err != nil {
 		return &config, err
 	}
 

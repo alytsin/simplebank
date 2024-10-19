@@ -14,23 +14,23 @@ services:
     links:
       - postgres
     depends_on:
-      migrate:
-        condition: service_completed_successfully
+#      migrate:
+#        condition: service_completed_successfully
       postgres:
         condition: service_healthy
 
-  migrate:
-    image: migrate/migrate
-    volumes:
-      - ../internal/db/migration:/migrations:ro
-    command: ["-path", "/migrations", "-database", $DB_SOURCE, "up"]
-    links:
-      - postgres
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - bank-network
+#  migrate:
+#    image: migrate/migrate
+#    volumes:
+#      - ../internal/db/migration:/migrations:ro
+#    command: ["-path", "/migrations", "-database", $DB_SOURCE, "up"]
+#    links:
+#      - postgres
+#    depends_on:
+#      postgres:
+#        condition: service_healthy
+#    networks:
+#      - bank-network
 
   postgres:
     image: postgres:16-alpine
