@@ -61,5 +61,17 @@ type LoginUserRequest struct {
 }
 
 type LoginUserResponse struct {
-	Token string `json:"token"`
+	AccessToken           string    `json:"access_token,omitempty"`
+	AccessTokenExpiredAt  time.Time `json:"access_token_expired_at,omitempty"`
+	RefreshToken          string    `json:"refresh_token,omitempty"`
+	RefreshTokenExpiredAt time.Time `json:"refresh_token_expired_at,omitempty"`
+}
+
+type RenewAccessTokenRequest struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
+type RenewAccessTokenResponse struct {
+	AccessToken          string    `json:"access_token,omitempty"`
+	AccessTokenExpiredAt time.Time `json:"access_token_expired_at,omitempty"`
 }

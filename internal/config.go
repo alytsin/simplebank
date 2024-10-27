@@ -14,6 +14,7 @@ type Config struct {
 	DbSource              string        `mapstructure:"DB_SOURCE"`
 	ServerAddress         string        `mapstructure:"SERVER_ADDRESS"`
 	AccessTokenTTL        time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+	RefreshTokenTTL       time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
 	AccessTokenPrivateKey string        `mapstructure:"TOKEN_PRIVATE_KEY"`
 	MigrationUrl          string        `mapstructure:"MIGRATION_URL"`
 }

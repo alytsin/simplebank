@@ -78,7 +78,7 @@ func TestAuthMiddleware(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 
-			controller := NewApiController(nil, tokenMaker, nil)
+			controller := NewApiController(nil, tokenMaker, nil, nil)
 
 			rsp := httptest.NewRecorder()
 			router := gin.New()
