@@ -31,6 +31,7 @@ func (s *Server) Run(listen string) error {
 
 	router.POST("/users", s.controller.CreateUser)
 	router.POST("/users/login", s.controller.LoginUser)
+	router.POST("/token/renew", s.controller.RenewAccessToken)
 
 	authGroup := router.Group("/").Use(s.controller.AuthMiddleware())
 

@@ -6,7 +6,49 @@ import (
 	"github.com/alytsin/simplebank/internal/db"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
+
+func (c *Api) RenewAccessToken(ctx *gin.Context) {
+	var req RenewAccessTokenRequest
+
+	if !c.validateJsonOrSendBadRequest(ctx, &req) {
+		return
+	}
+
+	refreshPayload, err := c.tokenMaker.VerifyToken(req.RefreshToken)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, ErrorMessage{Error: err})
+		return
+	}
+
+	session, err := c.store.GetSession(ctx, refreshPayload.ID)
+	if err != nil {
+		if errors.Is(db.TranslateError(err), db.ErrNoRows) {
+			ctx.String(http.StatusNotFound, "")
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err})
+		return
+	}
+
+	if session.Username != refreshPayload.Username {
+		ctx.JSON(http.StatusUnauthorized, ErrorMessage{Error: errors.New("session username mismatch")})
+		return
+	}
+
+	accessToken, err := c.tokenMaker.CreateToken(token.NewPayload(session.Username), c.config.AccessTokenTTL)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, RenewAccessTokenResponse{
+		AccessToken:          accessToken,
+		AccessTokenExpiredAt: time.Now().Add(c.config.AccessTokenTTL),
+	})
+
+}
 
 func (c *Api) CreateUser(ctx *gin.Context) {
 	var req CreateUserRequest
@@ -69,12 +111,36 @@ func (c *Api) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	newToken, err := c.tokenMaker.CreateToken(token.NewPayload(user.Username), c.tokenTTL)
+	accessDeadline := time.Now().Add(c.config.AccessTokenTTL)
+	accessToken, err := c.tokenMaker.CreateToken(token.NewPayload(user.Username), c.config.AccessTokenTTL)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, LoginUserResponse{Token: newToken})
+	refreshDeadline := time.Now().Add(c.config.RefreshTokenTTL)
+	refreshTokenPayload := token.NewPayload(user.Username)
+	refreshToken, err := c.tokenMaker.CreateToken(refreshTokenPayload, c.config.RefreshTokenTTL)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, ErrorMessage{Error: err})
+		return
+	}
+
+	_, err = c.store.CreateSession(ctx, db.CreateSessionParams{
+		ID:           refreshTokenPayload.ID,
+		Username:     user.Username,
+		RefreshToken: refreshToken,
+		UserAgent:    ctx.Request.UserAgent(),
+		ClientIp:     ctx.ClientIP(),
+		IsBlocked:    false,
+		ExpiresAt:    refreshDeadline,
+	})
+
+	ctx.JSON(http.StatusOK, LoginUserResponse{
+		AccessToken:           accessToken,
+		AccessTokenExpiredAt:  accessDeadline,
+		RefreshToken:          refreshToken,
+		RefreshTokenExpiredAt: refreshDeadline,
+	})
 
 }

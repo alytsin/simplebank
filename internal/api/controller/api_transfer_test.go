@@ -228,7 +228,7 @@ func TestValidateAccountForTransfer(t *testing.T) {
 				c.stubs(&store)
 			}
 
-			controller := NewApiController(&store, tokenMaker, new(security.PasswordPlain))
+			controller := NewApiController(&store, tokenMaker, new(security.PasswordPlain), nil)
 
 			rsp := httptest.NewRecorder()
 			router := gin.New()

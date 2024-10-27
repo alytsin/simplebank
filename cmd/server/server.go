@@ -47,7 +47,8 @@ func main() {
 		db.NewTxStore(database),
 		tokenMaker,
 		new(security.Password),
-	).SetTokenTTL(config.AccessTokenTTL)
+		config,
+	)
 
 	server := api.NewServer(cntrlr)
 

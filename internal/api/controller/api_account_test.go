@@ -128,7 +128,7 @@ func TestGetAccount(t *testing.T) {
 				Return(tc.foundAccount, tc.err).
 				Once()
 
-			controller := NewApiController(&store, tokenMaker, nil)
+			controller := NewApiController(&store, tokenMaker, nil, nil)
 
 			rsp := httptest.NewRecorder()
 			router := gin.New()
@@ -271,7 +271,7 @@ func TestCreateAccount(t *testing.T) {
 				Return(tc.account, tc.storeError).
 				Once()
 
-			controller := NewApiController(&store, tokenMaker, nil)
+			controller := NewApiController(&store, tokenMaker, nil, nil)
 
 			rsp := httptest.NewRecorder()
 			router := gin.New()
@@ -411,7 +411,7 @@ func TestListAccounts(t *testing.T) {
 				Return(tc.resultList, tc.storeError).
 				Once()
 
-			controller := NewApiController(&store, tokenMaker, nil)
+			controller := NewApiController(&store, tokenMaker, nil, nil)
 
 			rsp := httptest.NewRecorder()
 			router := gin.New()
